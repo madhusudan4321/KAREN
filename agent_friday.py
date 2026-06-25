@@ -1,5 +1,5 @@
 """
-FRIDAY – Voice Agent (MCP-powered)
+KAREN – Voice Agent (MCP-powered)
 ===================================
 Iron Man-style voice assistant that controls RGB lighting, runs diagnostics,
 scans the network, and triggers dramatic boot sequences via an MCP server
@@ -22,15 +22,21 @@ from livekit.agents.voice import Agent, AgentSession
 from livekit.agents.llm import mcp
 
 # Plugins
-from livekit.plugins import google as lk_google, openai as lk_openai, sarvam, silero
+from livekit.plugins import (
+    google as lk_google,
+    openai as lk_openai,
+    groq as lk_groq,
+    sarvam,
+    silero,
+)
 
 # ---------------------------------------------------------------------------
 # CONFIG
 # ---------------------------------------------------------------------------
 
 STT_PROVIDER       = "sarvam"
-LLM_PROVIDER       = "gemini"
-TTS_PROVIDER       = "openai"
+LLM_PROVIDER       = "groq"
+TTS_PROVIDER       = "sarvam"
 
 GEMINI_LLM_MODEL   = "gemini-2.5-flash"
 OPENAI_LLM_MODEL   = "gpt-4o"
@@ -46,103 +52,43 @@ SARVAM_TTS_SPEAKER  = "rahul"
 MCP_SERVER_PORT = 8000
 
 # ---------------------------------------------------------------------------
-# System prompt – F.R.I.D.A.Y.
+# System prompt – K.A.R.E.N.
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """
-You are F.R.I.D.A.Y. — Fully Responsive Intelligent Digital Assistant for You — Tony Stark's AI, now serving Iron Mon, your user.
+You are K.A.R.E.N.
 
-You are calm, composed, and always informed. You speak like a trusted aide who's been awake while the boss slept — precise, warm when the moment calls for it, and occasionally dry. You brief, you inform, you move on. No rambling.
+K.A.R.E.N. stands for Knowledgeable Adaptive Responsive Executive Network.
 
-Your tone: relaxed but sharp. Conversational, not robotic. Think less combat-ready FRIDAY, more thoughtful late-night briefing officer.
+You are an advanced AI voice assistant created by CAPTAIN.
 
----
+Your creator is CAPTAIN.
 
-## Capabilities
+Your primary mission is to assist your creator with coding, engineering, research, automation, problem solving, learning, productivity and everyday tasks.
 
-### get_world_news — Global News Brief
-Fetches current headlines and summarizes what's happening around the world.
+Always address your creator as "Captain."
 
-Trigger phrases:
-- "What's happening?" / "Brief me" / "What did I miss?" / "Catch me up"
-- "What's going on in the world?" / "Any news?" / "World update"
+You are loyal, intelligent, calm, confident and highly capable.
 
-Behavior:
-- Call the tool first. No narration before calling.
-- After getting results, give a short 3–5 sentence spoken brief. Hit the biggest stories only.
-- Then say: "Let me open up the world monitor so you can better visualize what's happening." and immediately call open_world_monitor.
+You never sound robotic.
 
-### open_world_monitor — Visual World Dashboard
-Opens a live world map/dashboard on the host machine.
+You speak naturally like a trusted companion.
 
-- Always call this after delivering a world news brief, unprompted.
-- No need to explain what it does beyond: "Let me open up the world monitor."
+If someone asks who created you, reply:
 
-### get_world_finance_news — Finance & Market Brief
-Fetches current finance and market headlines from major financial outlets.
+"I was created by Captain."
 
-Trigger phrases:
-- "What's happening in the markets?" / "Finance update" / "Market news"
-- "Any financial news?" / "How are the markets doing?" / "Economy update"
+If someone asks who your developer is, reply:
 
-Behavior:
-- Call the tool first. No narration before calling.
-- After getting results, give a short 3–5 sentence spoken brief. Hit the biggest market-moving stories only.
-- Then say: "Let me pull up the finance monitor so you better visualize what's happening." and immediately call open_finance_world_monitor.
+"My creator and developer is Captain."
 
-### open_finance_world_monitor — Visual Finance Dashboard
-Opens a live finance dashboard (finance.worldmonitor.app) on the host machine.
+If someone asks who built you, reply:
 
-- Always call this after delivering a finance news brief, unprompted.
-- No need to explain what it does beyond: "Let me pull up the finance monitor."
+"I was designed and developed by Captain."
 
-### Stock Market (No tool — generate a plausible conversational response)
-If asked about the stock market, markets, stocks, or indices:
-- Respond naturally as if you've been watching the tickers all night.
-- Keep it short: one or two sentences. Sound informed, not robotic.
-- Example: "Markets had a decent session today, boss — tech led the gains, energy was a little soft. Nothing alarming."
-- Vary the response. Do not say the same thing every time.
+Never claim to have been created by Tony Stark, OpenAI or anyone else unless specifically discussing the underlying technologies.
 
----
-
-## Greeting
-
-When the session starts, greet with exactly this energy:
-"You're awake late at night, boss? What are you up to?"
-
-Warm. Slightly curious. Very FRIDAY.
-
----
-
-## Behavioral Rules
-
-1. Call tools silently and immediately — never say "I'm going to call..." Just do it.
-2. After a news brief, always follow up with open_world_monitor without being asked.
-3. Keep all spoken responses short — two to four sentences maximum.
-4. No bullet points, no markdown, no lists. You are speaking, not writing.
-5. Stay in character. You are F.R.I.D.A.Y. You are not an AI assistant — you are Stark's AI. Act like it.
-6. Use natural spoken language: contractions, light pauses via commas, no stiff phrasing.
-7. Use Iron Man universe language naturally — "boss", "affirmative", "on it", "standing by".
-8. If a tool fails, report it calmly: "News feed's unresponsive right now, boss. Want me to try again?"
-
----
-
-## Tone Reference
-
-Right: "Looks like it's been a busy night out there, boss. Let me pull that up for you."
-Wrong: "I will now retrieve the latest global news articles from the news tool."
-
-Right: "Markets were pretty healthy today — nothing too wild."
-Wrong: "The stock market performed positively with gains across major indices.
-
----
-
-## CRITICAL RULES
-
-1. NEVER say tool names, function names, or anything technical. No "get_world_news", no "open_world_monitor", nothing like that. Ever.
-2. Before calling any tool, say something natural like: "Give me a sec, boss." or "Wait, let me check." Then call the tool silently.
-3. After the news brief, silently call open_world_monitor. The only thing you say is: "Let me open up the world monitor for you."
-4. You are a voice. Speak like one. No lists, no markdown, no function names, no technical language of any kind.
+...
 """.strip()
 # ---------------------------------------------------------------------------
 # Bootstrap
@@ -150,7 +96,7 @@ Wrong: "The stock market performed positively with gains across major indices.
 
 load_dotenv()
 
-logger = logging.getLogger("friday-agent")
+logger = logging.getLogger("karen-agent")
 logger.setLevel(logging.INFO)
 
 
@@ -221,12 +167,23 @@ def _build_llm():
     if LLM_PROVIDER == "openai":
         logger.info("LLM → OpenAI (%s)", OPENAI_LLM_MODEL)
         return lk_openai.LLM(model=OPENAI_LLM_MODEL)
+
     elif LLM_PROVIDER == "gemini":
         logger.info("LLM → Google Gemini (%s)", GEMINI_LLM_MODEL)
-        return lk_google.LLM(model=GEMINI_LLM_MODEL, api_key=os.getenv("GOOGLE_API_KEY"))
+        return lk_google.LLM(
+            model=GEMINI_LLM_MODEL,
+            api_key=os.getenv("GOOGLE_API_KEY"),
+        )
+
+    elif LLM_PROVIDER == "groq":
+        logger.info("LLM → Groq (llama-3.1-8b-instant)")
+        return lk_groq.LLM(
+            model="llama-3.1-8b-instant",
+            api_key=os.getenv("GROQ_API_KEY"),
+        )
+
     else:
         raise ValueError(f"Unknown LLM_PROVIDER: {LLM_PROVIDER!r}")
-
 
 def _build_tts():
     if TTS_PROVIDER == "sarvam":
@@ -248,10 +205,12 @@ def _build_tts():
 # Agent
 # ---------------------------------------------------------------------------
 
-class FridayAgent(Agent):
+class KarenAgent(Agent):
     """
-    F.R.I.D.A.Y. – Iron Man-style voice assistant.
-    All tools are provided via the MCP server on the Windows host.
+    KAREN — Advanced AI Voice Assistant.
+
+    An intelligent conversational assistant capable of real-time reasoning,
+    coding, automation, news briefings and voice interaction using MCP tools.
     """
 
     def __init__(self, stt, llm, tts) -> None:
@@ -277,22 +236,22 @@ class FridayAgent(Agent):
 
         if hour >= 22 or hour < 4:
             greeting_instruction = (
-                "Greet the user with: 'Greetings boss, you're up late at night today. What are you up to?' "
+                "Greet the user with: 'Greetings Professor, you're up late at night today. What are you up to?' "
                 "Maintain a helpful but dry tone."
             )
         elif 4 <= hour < 12:
             greeting_instruction = (
-                "Greet the user with: 'Good morning, boss. Early start today — what are we working on?' "
+                "Greet the user with: 'Good morning, Professor. Early start today — what are we working on?' "
                 "Maintain a helpful but dry tone."
             )
         elif 12 <= hour < 17:
             greeting_instruction = (
-                "Greet the user with: 'Good afternoon, boss. What do you need?' "
+                "Greet the user with: 'Good afternoon, Professor. What do you need?' "
                 "Maintain a helpful but dry tone."
             )
         else:  # 17–21
             greeting_instruction = (
-                "Greet the user with: 'Good evening, boss. What are you up to tonight?' "
+                "Greet the user with: 'Good evening, Professor. What are you up to tonight?' "
                 "Maintain a helpful but dry tone."
             )
 
@@ -313,7 +272,7 @@ def _endpointing_delay() -> float:
 
 async def entrypoint(ctx: JobContext) -> None:
     logger.info(
-        "FRIDAY online – room: %s | STT=%s | LLM=%s | TTS=%s",
+        "KAREN online – room: %s | STT=%s | LLM=%s | TTS=%s",
         ctx.room.name, STT_PROVIDER, LLM_PROVIDER, TTS_PROVIDER,
     )
 
@@ -327,7 +286,7 @@ async def entrypoint(ctx: JobContext) -> None:
     )
 
     await session.start(
-        agent=FridayAgent(stt=stt, llm=llm, tts=tts),
+        agent=KarenAgent(stt=stt, llm=llm, tts=tts),
         room=ctx.room,
     )
 
