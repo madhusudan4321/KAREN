@@ -9,13 +9,18 @@ dependencies = [
     "httpx",
     "livekit-agents[deepgram,groq,openai,sarvam,silero]>=1.5.2",
     "livekit-plugins-google>=1.5.2",
+    "mss>=10.2.0",
+    "pillow>=12.2.0",
     "psutil>=7.2.2",
+    "pyautogui>=0.9.54",
+    "pyperclip>=1.11.0",
     "python-dotenv",
+    "rapidfuzz>=3.14.5",
 ]
 
 [project.scripts]
 friday = "server:main"
-friday_voice = "agent_friday:dev" # Points to the wrapper
+friday_voice = "agent_karen:dev" # Points to the wrapper
 
 [build-system]
 requires = ["hatchling"]
