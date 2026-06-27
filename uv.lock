@@ -707,6 +707,7 @@ dependencies = [
     { name = "httpx" },
     { name = "livekit-agents", extra = ["deepgram", "groq", "openai", "sarvam", "silero"] },
     { name = "livekit-plugins-google" },
+    { name = "psutil" },
     { name = "python-dotenv" },
 ]
 
@@ -716,6 +717,7 @@ requires-dist = [
     { name = "httpx" },
     { name = "livekit-agents", extras = ["deepgram", "groq", "openai", "sarvam", "silero"], specifier = ">=1.5.2" },
     { name = "livekit-plugins-google", specifier = ">=1.5.2" },
+    { name = "psutil", specifier = ">=7.2.2" },
     { name = "python-dotenv" },
 ]
 
